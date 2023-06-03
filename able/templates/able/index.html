@@ -2,27 +2,52 @@
 
 {% block content %}
 
-    <h1>Your Dyslexia Helper</h1>
+    <h1>Your ADHD Helper</h1>
 
     <div class="form-floating">
+
         <form id="ask-form" action="" method="post">
 
             {% csrf_token %}
 
-            <h4>Write your text and I will correct it</h4>
+            <!-- The `label` is attached to the hidden file input -->
+            <label for="cameraFileInput">
+                <span class="btn btn-primary">Click to open your camera</span>
 
-            <textarea class="form-control" placeholder="Enter text here.." id="floatingTextarea" name="txt">{{txt}}</textarea>
+                <!-- The hidden file `input` for opening the native camera -->
+                <input
+                    id="cameraFileInput"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style="display: none;"
+                />
+            </label>
 
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary mt-4">Go</button>
-            </div>
+            <img id="pictureFromCamera" style="max-width: 100%;" />
+            <input type="hidden" name="filepath" id="filepath">
+
         </form>
+
+        <script type="text/javascript">
+            document
+              .getElementById("cameraFileInput")
+              .addEventListener("change", function () {
+                document
+                  .getElementById("pictureFromCamera")
+                  .setAttribute("src", window.URL.createObjectURL(this.files[0]));
+                document
+                  .getElementById("filepath").value = window.URL.createObjectURL(this.files[0]);
+                document
+                  .getElementById("ask-form").submit();
+              });
+        </script>
 
         {% if res %}
 
             <br>
-            <h4>Here is the corrected text</h4>
-            {{ res }}
+            <h4>Here is the result</h4>
+            {{ res|safe }}
 
         {% endif %}
 
