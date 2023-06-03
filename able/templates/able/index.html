@@ -1,0 +1,31 @@
+{% extends "able/base.html" %}
+
+{% block content %}
+
+    <h1>Your Dyslexia Helper</h1>
+
+    <div class="form-floating">
+        <form id="ask-form" action="" method="post">
+
+            {% csrf_token %}
+
+            <h4>Write your text and I will correct it</h4>
+
+            <textarea class="form-control" placeholder="Enter text here.." id="floatingTextarea" name="txt">{{txt}}</textarea>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary mt-4">Go</button>
+            </div>
+        </form>
+
+        {% if res %}
+
+            <br>
+            <h4>Here is the corrected text</h4>
+            {{ res }}
+
+        {% endif %}
+
+    </div>
+
+{% endblock %}
