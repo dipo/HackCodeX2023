@@ -6,7 +6,7 @@
 
     <div class="form-floating">
 
-        <form id="ask-form" action="" method="post">
+        <form id="ask-form" action="" method="post" enctype="multipart/form-data">
 
             {% csrf_token %}
 
@@ -19,13 +19,13 @@
                     id="cameraFileInput"
                     type="file"
                     accept="image/*"
-                    capture="environment"
+                    capture="environment",
+                    name="thefile",
                     style="display: none;"
                 />
             </label>
 
             <img id="pictureFromCamera" style="max-width: 100%;" />
-            <input type="hidden" name="filepath" id="filepath">
 
         </form>
 
@@ -33,21 +33,22 @@
             document
               .getElementById("cameraFileInput")
               .addEventListener("change", function () {
-                document
-                  .getElementById("pictureFromCamera")
-                  .setAttribute("src", window.URL.createObjectURL(this.files[0]));
-                document
-                  .getElementById("filepath").value = window.URL.createObjectURL(this.files[0]);
-                document
-                  .getElementById("ask-form").submit();
+                document.getElementById("pictureFromCamera").setAttribute("src", window.URL.createObjectURL(this.files[0]));
+                document.getElementById("ask-form").submit();
               });
         </script>
 
-        {% if res %}
+        {% if extracted_text %}
 
             <br>
-            <h4>Here is the result</h4>
-            {{ res|safe }}
+            <h4>Original text</h4>
+            {{ extracted_text|safe }}
+            <br>
+            <h4>Formatted text</h4>
+            {{ formatted_text|safe }}
+            <br>
+            <h4>Formatted summary text</h4>
+            {{ formatted_summary_text|safe }}
 
         {% endif %}
 

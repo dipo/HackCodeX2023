@@ -3,12 +3,18 @@ import os
 import openai
 from django.conf import settings
 
+from django.middleware.csrf import get_token
+import pytesseract
+from PIL import Image
+
 openai.api_key = settings.OPENAI_API_KEY
 
 def index(request):
 
-    res = ""
-    txt = ""
+    extracted_text = ""
+    formatted_text = ""
+    summary_text = ""
+    formatted_summary_text = ""
 
     ocr = """
         Acknowledgements:
@@ -44,50 +50,15 @@ def index(request):
         understand the program. Silvia Martinez and Milagros Romero to have introduced me
     """
 
-    ask = 'Summarize this for a second-grade student: \n\n' + ocr
 
     if request.method == "POST":
-        print(request.POST)
+        image_file = request.FILES.get('thefile')
+        extracted_text = extract_text_from_image(image_file)
+        print(extracted_text)
+        extracted_text = extracted_text.replace('\n', '\n ')
+        print(extracted_text)
 
-    # response = openai.Completion.create(
-    #     model="text-davinci-003",
-    #     prompt=ask,
-    #     temperature=1,
-    #     max_tokens=64,
-    #     top_p=1.0,
-    #     frequency_penalty=0.0,
-    #     presence_penalty=0.0
-    # )
-
-    # res = response.choices[0].text.strip()
-
-    # words = res.split(" ")
-    # print(words)
-    # processed_words = []
-    # for word in words:
-    #     first_half  = word[:len(word)//2]
-    #     second_half = word[len(word)//2:]
-    #     processed_words.append("<strong>"+first_half+"</strong>"+second_half)
-    # print(processed_words)
-
-    # res = " ".join(processed_words)
-
-    context = {
-        'res': res,
-        'txt': txt,
-    }
-
-    return render(request, 'able/index.html', context)
-
-def index2(request):
-
-    res = ""
-    txt = ""
-
-    if request.method == "POST":
-        txt = request.POST['txt']
-
-        ask = 'Please correct this text written by a person with dyslexia: "' + txt + '"'
+        ask = 'Summarize this for a second-grade student: \n\n' + extracted_text
 
         response = openai.Completion.create(
             model="text-davinci-003",
@@ -99,12 +70,36 @@ def index2(request):
             presence_penalty=0.0
         )
 
-        res = response.choices[0].text
-
+        summary_text = response.choices[0].text.strip()
 
     context = {
-        'res': res,
-        'txt': txt,
+        'extracted_text': extracted_text.replace('\n', '<br>'),
+        'formatted_text': format_text(extracted_text),
+        'formatted_summary_text': format_text(summary_text),
     }
 
     return render(request, 'able/index.html', context)
+
+
+def format_text(input_text):
+    words = input_text.split(" ")
+    print(words)
+    processed_words = []
+    for word in words:
+        first_half  = word[:len(word)//2]
+        second_half = word[len(word)//2:]
+        processed_words.append("<strong>"+first_half+"</strong>"+second_half)
+    print(processed_words)
+    processed_words = [x.replace('\n', '<br>') for x in processed_words]
+    print(processed_words)
+
+    return " ".join(processed_words)
+
+
+def extract_text_from_image(image_path):
+    # Open the image file
+    with Image.open(image_path) as image:
+        # Perform OCR using Tesseract
+        text = pytesseract.image_to_string(image)
+    return text
+
